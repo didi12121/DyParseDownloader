@@ -1,3 +1,4 @@
+import cn.hutool.core.thread.ThreadUtil;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.openqa.selenium.By;
@@ -7,17 +8,30 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.openqa.selenium.chrome.ChromeOptions;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.NoSuchElementException;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class App {
     public static void main(String[] args) {
+        getVideo("https://v.douyin.com/FdUU7oH/","temp");
+    }
+    public static void _main(String[] args) {
+
+        //设置webdriver路径
+        System.setProperty("webdriver.chrome.driver", "C:\\Users\\zhaidi\\IdeaProjects\\DyParseDownloader\\webDriver\\chromedriver.exe");
         ChromeOptions chromeOptions = getChromeOptions();
         //主页链接
-        String url = "";
-        WebDriver webDriver = new ChromeDriver(chromeOptions);
+        String url = "https://v.douyin.com/NKMwuBs/";
+        ChromeDriver webDriver = new ChromeDriver(chromeOptions);
+        Map<String, Object> command
+                =new HashMap<>();
+        command.put("source", "Object.defineProperty(navigator, 'webdriver', {get: () => undefined})");
+        webDriver.executeCdpCommand("Page.addScriptToEvaluateOnNewDocument", command);
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         webDriver.get(url);
         //判断是否加载完成列表
@@ -32,6 +46,7 @@ public class App {
     private static ChromeOptions getChromeOptions() {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("log-level=3","-–disable-gpu");
+        chromeOptions.addArguments("disable-infobars");
         return chromeOptions;
     }
 
@@ -44,16 +59,27 @@ public class App {
         String title = webDriver.getTitle();
         Document parse = Jsoup.parse(pageSource);
         List<String> collect = parse.getAllElements().stream().filter(x -> (x.tagName().equals("li") && x.className().equals("ECMy_Zdt"))).map(x -> x.getElementsByTag("a").attr("href")).collect(Collectors.toList());
+//        CountDownLatch countDownLatch = new CountDownLatch(collect.size());
+
+//        CountDownLatch countDownLatch = ThreadUtil.newCountDownLatch(collect.size());
+//        collect.forEach(x->{
+//            ThreadUtil.execute(()->{
+//                String u = "https:" + x;
+//                System.out.println(u);
+//                getVideo(u,title);
+//                countDownLatch.countDown();
+//            });
+//        });
         collect.forEach(x->{
-            String u = "https:" + x;
-            System.out.println(u);
-            getVideo(u,title);
-            try {
-                Thread.sleep(1000);
-            } catch (InterruptedException e) {
-                e.printStackTrace();
-            }
+                String u = "https:" + x;
+                System.out.println(u);
+                getVideo(u,title);
         });
+//        try {
+//            countDownLatch.await();
+//        } catch (InterruptedException e) {
+//            e.printStackTrace();
+//        }
         webDriver.close();
     }
 
