@@ -18,10 +18,6 @@ import java.util.stream.Collectors;
 
 public class App {
     public static void main(String[] args) {
-        getVideo("https://v.douyin.com/FdUU7oH/","temp");
-    }
-    public static void _main(String[] args) {
-
         //设置webdriver路径
         System.setProperty("webdriver.chrome.driver", "C:\\Users\\zhaidi\\IdeaProjects\\DyParseDownloader\\webDriver\\chromedriver.exe");
         ChromeOptions chromeOptions = getChromeOptions();
@@ -35,9 +31,9 @@ public class App {
         webDriver.manage().timeouts().implicitlyWait(5, TimeUnit.SECONDS);
         webDriver.get(url);
         //判断是否加载完成列表
-        Boolean aa = false;
-        while (!aa) {
-                    aa = webDriver.findElement(new By.ByCssSelector("#root > div > div.T_foQflM > div > div > div.ckqOrial > div.mwbaK9mv > div:nth-child(2) > div")).getText().equals("暂时没有更多了");
+        Boolean hasNext = false;
+        while (!hasNext) {
+            hasNext = webDriver.findElement(new By.ByCssSelector("#root > div > div.T_foQflM > div > div > div.ckqOrial > div.mwbaK9mv > div:nth-child(2) > div")).getText().equals("暂时没有更多了");
                 webDriver.findElement(By.cssSelector("body")).sendKeys(Keys.SPACE);
         }
         getlist(webDriver);
@@ -59,27 +55,11 @@ public class App {
         String title = webDriver.getTitle();
         Document parse = Jsoup.parse(pageSource);
         List<String> collect = parse.getAllElements().stream().filter(x -> (x.tagName().equals("li") && x.className().equals("ECMy_Zdt"))).map(x -> x.getElementsByTag("a").attr("href")).collect(Collectors.toList());
-//        CountDownLatch countDownLatch = new CountDownLatch(collect.size());
-
-//        CountDownLatch countDownLatch = ThreadUtil.newCountDownLatch(collect.size());
-//        collect.forEach(x->{
-//            ThreadUtil.execute(()->{
-//                String u = "https:" + x;
-//                System.out.println(u);
-//                getVideo(u,title);
-//                countDownLatch.countDown();
-//            });
-//        });
         collect.forEach(x->{
                 String u = "https:" + x;
                 System.out.println(u);
                 getVideo(u,title);
         });
-//        try {
-//            countDownLatch.await();
-//        } catch (InterruptedException e) {
-//            e.printStackTrace();
-//        }
         webDriver.close();
     }
 
